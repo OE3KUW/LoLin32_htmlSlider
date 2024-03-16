@@ -1,5 +1,5 @@
-var gateway = `ws://${window.location.hostname}/ws`;
-var websocket;
+let gateway = `ws://${window.location.hostname}/ws`;
+let websocket;
 window.addEventListener('load', onload);
 
 function onload(event) {
@@ -26,8 +26,6 @@ function onClose(event) {
 }
 
 function onMessage(event) {
-    var text;
-    var len;
 
     // console.log(event.data);
 
@@ -36,28 +34,6 @@ function onMessage(event) {
         console.log("event.data ON / OFF");
         document.getElementById('state').innerHTML = event.data;
     }    
-    
-/*    if (event.data.charAt(0) == 'B')  // BAT
-    {
-        len = event.data.length;
-        // console.log(len);
-        text = event.data.substring(3, len);  // von bis! 
-        // console.log(text);
-        document.getElementById('battery').innerHTML = text;
-    }
-
-    if (event.data.charAt(0) == 'W')
-    {
-        len = event.data.length;
-        text = event.data.substring(3, len);
-        var svgRectA = document.getElementById("meinRectA");
-        var svgRectB = document.getElementById("meinRectB");
-        var winkel = parseInt(text);
-        svgRectA.setAttribute("transform","rotate(" + winkel + ", 200, 150 )");
-        svgRectB.setAttribute("transform","rotate(" + winkel + ", 200, 150 )");
-        console.log("winkel" + winkel);
-    }
-  */  
 }
 
 function initButton() {
@@ -75,20 +51,19 @@ function toggleOFF(event) {
 
 function getCurrentValue()
 {
-    var xhr = new XMLHttpRequest();
+    let xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
         if(this.readyState == 4 && this.status == 200)
         {
             document.getElementById("pwmSlider").value = this.responseText;
-            //document.getElementById("textSliderValue").innerHTML = this.responseText;
         }
     };
     xhr.open("GET", "/currentValue", true);
     xhr.send();
 }
 function updateSliderPWM(element) {
-    var sliderValue = document.getElementById("pwmSlider").value;
-    //document.getElementById("textSliderValue").innerHTML = sliderValue;
+    let sliderValue = document.getElementById("pwmSlider").value;
+    sliderValue = "sLa" + sliderValue;
     console.log(sliderValue);
     websocket.send(sliderValue);
 }

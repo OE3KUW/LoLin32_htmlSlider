@@ -3,11 +3,11 @@
                                                 қuran march 2024
 ******************************************************************/
 #include <Arduino.h>
-#include <PS4Controller.h>
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include "SPIFFS.h"
+#include "serviceSetIdentifier.h"
 
 #define TRUE                            1
 #define FALSE                           0
@@ -32,8 +32,6 @@ hw_timer_t *timer = NULL;
 void IRAM_ATTR myTimer(void);
 volatile int startWiFi = 0;
 
-const char* ssid = "A1-A82861";
-const char* password = "7PMGDV96J8";
 
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
@@ -75,7 +73,7 @@ String processor(const String& var)
         else
         {
             Serial.println("off");
-            ledState = 0; return "-OFF-";
+            ledState = 0; return "-OFF-"; // wird ausgegeben... 
         }
     }
 
@@ -91,6 +89,8 @@ void handleWebSocketMessage(void *arg, uint8_t * data, size_t len)
 {
     AwsFrameInfo * info = (AwsFrameInfo*)arg;
     String sliderValue;
+    String val;
+    int length;
 
     if (info->final && info->index == 0 && info->len && info->opcode == WS_TEXT)
     {
@@ -109,11 +109,13 @@ void handleWebSocketMessage(void *arg, uint8_t * data, size_t len)
             notifyClients("OFF");
             Serial.println("handleWebSocketMessage: off");
         }
-        else
+        else if(strncmp((char*)data, "sLa", 3) == 0)
         {
             sliderValue = (char*)data;
+            length = sliderValue.length();
+            val = sliderValue.substring(3, length);
+            vL = val.toInt();
             Serial.println(sliderValue);
-            vL = sliderValue.toInt();
         }
     }
 }
