@@ -1,9 +1,10 @@
 /******************************************************************
-                    service set indentifier
+  
+                   service set indentifier
                                                 қuran march 2024
 ******************************************************************/
 
-const char* ssid = "*******";
-const char* password = "*********************";
+//const char* ssid = "*******";
+//const char* password = "*********************";
 
 

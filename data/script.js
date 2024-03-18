@@ -9,7 +9,7 @@ function onload(event) {
 }
 
 function initWebSocket() {
-    console.log('Trying to open a WebSockeet connection. . . ');
+    console.log('Trying to open a WebSocket connection. . . ');
     websocket= new WebSocket(gateway);
     websocket.onopen = onOpen;
     websocket.onclose = onClose;
@@ -26,8 +26,6 @@ function onClose(event) {
 }
 
 function onMessage(event) {
-
-    // console.log(event.data);
 
     if (event.data.charAt(0) == 'O')  // ON / OFF
     {
@@ -59,6 +57,7 @@ function getCurrentValue()
         }
     };
     xhr.open("GET", "/currentValue", true);
+    console.log("xhr.send");
     xhr.send();
 }
 function updateSliderPWM(element) {

@@ -13,8 +13,10 @@
 #define FALSE                           0
 #define WAIT_ONE_SEC                    10000
 #define WAIT_250_MSEC                   2500
-#define WAIT_ONE_10MSEC                 100
+#define WAIT_10_MSEC                    100
 #define ON_BOARD_LED                    5
+#define ON_BOARD_LED_ON                 0
+#define ON_BOARD_LED_OFF                1
 
 #define WHEEL_L                         2
 #define WHEEL_R                         A4
@@ -62,10 +64,12 @@ void initWiFi()
 
 String processor(const String& var)
 {
+    Serial.println("processor:");
+    Serial.println(var);
 
     if (var == "STATE") 
     {
-        if (digitalRead(led5))
+        if (digitalRead(led5) == ON_BOARD_LED_ON)
         {
             Serial.println("on");
             ledState = 1; return "-ON-";
@@ -73,7 +77,7 @@ String processor(const String& var)
         else
         {
             Serial.println("off");
-            ledState = 0; return "-OFF-"; // wird ausgegeben... 
+            ledState = 0; return "-OFF-"; // wird beim ersten Druchlauf ausgegeben... 
         }
     }
 
@@ -82,6 +86,8 @@ String processor(const String& var)
 
 void notifyClients(String state)
 {
+    Serial.println("notifyClients:");
+    Serial.println(state);
     ws.textAll(state);
 }
 
@@ -99,7 +105,7 @@ void handleWebSocketMessage(void *arg, uint8_t * data, size_t len)
         if (strcmp((char*)data, "bON") == 0)
         {
             ledState = 1;
-            notifyClients("ON!!!");
+            notifyClients("ON!!!"); // unter laufenden Betrieb ausgegeben
             Serial.println("handleWebSocketMessage: on");
 
         }
@@ -137,7 +143,8 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient * client, AwsEventType
              handleWebSocketMessage(arg, data, len);
         break;
 
-        case WS_EVT_PONG: case WS_EVT_ERROR:
+        case WS_EVT_PONG: 
+        case WS_EVT_ERROR:
         break;
     }
 }
@@ -201,8 +208,8 @@ void loop()
     {
         oneSecFlag = FALSE;
 
-        if (ledState == 1) digitalWrite(ON_BOARD_LED, LOW); // on 
-        else               digitalWrite(ON_BOARD_LED, HIGH); // off
+        if (ledState == 1) digitalWrite(ON_BOARD_LED, ON_BOARD_LED_ON);  // on = LOW! 
+        else               digitalWrite(ON_BOARD_LED, ON_BOARD_LED_OFF); // off
 
     }
 
@@ -245,7 +252,7 @@ void IRAM_ATTR myTimer(void)   // periodic timer interrupt, expires each 0.1 mse
         qtick = 0; 
     }
 
-    if (mtick >= WAIT_ONE_10MSEC) 
+    if (mtick >= WAIT_10_MSEC) 
     {
         tenMSecFlag = TRUE;
         mtick = 0; 
