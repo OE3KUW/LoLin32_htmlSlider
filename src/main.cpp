@@ -3,6 +3,7 @@
                                                 қuran march 2024
 ******************************************************************/
 #include <Arduino.h>
+#include <stdio.h>
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
@@ -11,12 +12,14 @@
 
 #define TRUE                            1
 #define FALSE                           0
+#define LEN                             21
 #define WAIT_ONE_SEC                    10000
 #define WAIT_250_MSEC                   2500
 #define WAIT_10_MSEC                    100
 #define ON_BOARD_LED                    5
 #define ON_BOARD_LED_ON                 0
 #define ON_BOARD_LED_OFF                1
+
 
 #define WHEEL_L                         2
 #define WHEEL_R                         A4
@@ -49,45 +52,51 @@ void initSPIFFS()
 
 void initWiFi()
 {
+    char text[LEN];
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, password);
     Serial.println("Connection to WiFi . . .");
     while ((WiFi.status() != WL_CONNECTED) && (startWiFi < 21))
     {
-        Serial.print(" .");  
         delay(1000);   
+        printf(" .");  
         startWiFi++;
     }
-    Serial.println("IP:");  
-    Serial.println(WiFi.localIP());
+
+    uint32_t ip = (uint32_t) WiFi.localIP();
+    sprintf(text, "%u.%u.%u.%u", ip & 0xFF, (ip>>8) & 0xFF, (ip>>16) & 0xFF, (ip>>24) & 0xFF );
+    printf("\nIP: %s\n", text);
 }
 
 String processor(const String& var)
 {
-    Serial.println("processor:");
-    Serial.println(var);
+    String ret = "";
+
+    printf("processor: %s:\n", var);
 
     if (var == "STATE") 
     {
         if (digitalRead(led5) == ON_BOARD_LED_ON)
         {
-            Serial.println("on");
-            ledState = 1; return "-ON-";
+            printf("-ON-");
+            ledState = 1; ret = "-ON-";
+
         }
         else
         {
-            Serial.println("off");
-            ledState = 0; return "-OFF-"; // wird beim ersten Druchlauf ausgegeben... 
+            printf("-OFF-");
+            ledState = 0; ret = "-OFF-"; // wird beim ersten Druchlauf ausgegeben... 
         }
     }
 
-    return String();
+    printf("\n------------------------\n");
+
+    return ret;
 }
 
 void notifyClients(String state)
 {
-    Serial.println("notifyClients:");
-    Serial.println(state);
+    printf("notifyClients: %s\n", state);
     ws.textAll(state);
 }
 
@@ -106,22 +115,22 @@ void handleWebSocketMessage(void *arg, uint8_t * data, size_t len)
         {
             ledState = 1;
             notifyClients("ON!!!"); // unter laufenden Betrieb ausgegeben
-            Serial.println("handleWebSocketMessage: on");
+            printf("handleWebSocketMessage: on\n");
 
         }
         else if (strcmp((char*)data, "bOFF") == 0)
         {
             ledState = 0;
             notifyClients("OFF");
-            Serial.println("handleWebSocketMessage: off");
+            printf("handleWebSocketMessage: off\n");
         }
         else if(strncmp((char*)data, "sLa", 3) == 0)
         {
-            sliderValue = (char*)data;
+            sliderValue = (const char*)data;
             length = sliderValue.length();
             val = sliderValue.substring(3, length);
             vL = val.toInt();
-            Serial.println(sliderValue);
+            printf("%s\n", sliderValue);
         }
     }
 }
@@ -132,11 +141,11 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient * client, AwsEventType
     switch(type)
     {
         case WS_EVT_CONNECT: 
-             Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
+             printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
         break;
 
         case WS_EVT_DISCONNECT:
-             Serial.printf("WebSocket client #%u disconnected\n", client->id());
+             printf("WebSocket client #%u disconnected\n", client->id());
         break;
 
         case WS_EVT_DATA:
@@ -158,7 +167,7 @@ void initWebSocket()
 void setup() 
 {
     Serial.begin(115200);
-    Serial.println("start!");
+    printf("start!");
 
     timer = timerBegin(0, 80, true);
     timerAttachInterrupt(timer, &myTimer, true);
@@ -179,7 +188,6 @@ void setup()
     digitalWrite(WHEEL_L, LOW); // stop !
     digitalWrite(WHEEL_R, LOW); // stop !
   
-
     LDir = 0; 
     RDir = 1;
     vL = vR = 0;
@@ -188,13 +196,17 @@ void setup()
     initWiFi();
     initWebSocket();
 
-    server.on("/", HTTP_GET,
-    [](AsyncWebServerRequest * request)
-    {
+    server.on("/", HTTP_GET, 
+    [](AsyncWebServerRequest * request) {
         request->send(SPIFFS, "/index.html", "text/html", false, processor);
     });
 
     server.serveStatic("/", SPIFFS, "/");
+    
+    server.on("/logo", HTTP_GET, 
+    [](AsyncWebServerRequest *request) {
+        request->send(SPIFFS, "/logo.png", "image/png");
+    } );
 
     // Start server:
     server.begin();

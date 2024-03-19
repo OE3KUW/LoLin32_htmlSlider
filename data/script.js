@@ -9,7 +9,7 @@ function onload(event) {
 }
 
 function initWebSocket() {
-    console.log('Trying to open a WebSocket connection. . . ');
+    console.log('open a WebSocket connection. . . ');
     websocket= new WebSocket(gateway);
     websocket.onopen = onOpen;
     websocket.onclose = onClose;
@@ -29,7 +29,7 @@ function onMessage(event) {
 
     if (event.data.charAt(0) == 'O')  // ON / OFF
     {
-        console.log("event.data ON / OFF");
+        console.log("ON | OFF");
         document.getElementById('state').innerHTML = event.data;
     }    
 }
@@ -40,11 +40,13 @@ function initButton() {
 }
 
 function toggleON(event) {
-    websocket.send('bON'); console.log("toggleON");
+    console.log("toggleON");
+    websocket.send('bON'); 
 }
 
 function toggleOFF(event) {
-    websocket.send('bOFF'); console.log("toggleOFF");
+    console.log("toggleOFF");
+    websocket.send('bOFF'); 
 }
 
 function getCurrentValue()

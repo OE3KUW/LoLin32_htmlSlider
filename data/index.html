@@ -1,26 +1,32 @@
 <!DOCTYPE HTML>
 <html>
     <head>
-        <title>Elektronik und Technische Informatik</title>
+        <title>roboter system 24</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" type="text/css" href="style.css">
     </head>
-    <body>
-        <script src="script.js"></script>
-        <p> </p>
+    <body>       
+        <p> 
+        <img src="logo">
+        </p>
+        <p>
+        <h3>Elektronik und Technische Informatik</h3>
+        </p>
+        <p> 
         <div class="topnav">
-            <h1>roboter test system 24</h1>
+            <h1>roboter system 24</h1>
         </div>
-                  
+        </p>          
         <p> 
             <button class="button-on" id="bON">ON!</button>
             <button class="button-off" id="bOFF">OFF!</button>
         </p>
         <p class="state">Led: <span id="state">%STATE%</span></p>
         <p class="switch">
-            <input type="range" oninput="updateSliderPWM(this)" 
+            <input type="range" oninput="updateSliderPWM(this)" orient="vertical"
             id="pwmSlider" min="0" max="255" step="1" value="0" class="slider">
         </p>
+        <script src="script.js"></script>
     </body>
 </html>
 
